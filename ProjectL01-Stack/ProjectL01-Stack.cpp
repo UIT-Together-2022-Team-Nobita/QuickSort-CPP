@@ -5,6 +5,25 @@
 #include <algorithm>
 using namespace std;
 
+struct segment
+{
+	int Left;
+	int Right;
+};
+typedef struct segment SEGMENT;
+struct stack
+{
+	int n;
+	SEGMENT arr[10000];
+};
+typedef struct stack STACK;
+
+void Init(STACK&);
+int IsEmpty(STACK);
+int IsFull(STACK);
+void Push(STACK&, SEGMENT);
+SEGMENT Pop(STACK&);
+
 bool Input(int[], int&, string);
 void QuickSort(int[], int);
 void QuickSort(int[], int, int);
@@ -18,7 +37,7 @@ int main()
 	start = clock();
 	static int arr[1000000];
 	int n;
-	cout << "Project L01" << endl;
+	cout << "Project L01 - Stack" << endl;
 	for (int i = 1; i <= 13; i++)
 	{
 		string filename = "intdata";
@@ -41,7 +60,7 @@ int main()
 	}
 	end = clock();
 	time_use = (double)(end - start) / CLOCKS_PER_SEC;
-	cout << "\nRecursion quick sort runtime:	" << time_use;
+	cout << "\nStack de-recursion quick sort runtime:	" << time_use;
 	cout << endl;
 	return 1;
 }
@@ -57,11 +76,43 @@ bool Input(int arr[], int& n, string filename)
 	return true;
 }
 
+void Init(STACK& stk)
+{
+	stk.n = 0;
+}
+
+int IsEmpty(STACK stk)
+{
+	if (stk.n == 0)
+		return 1;
+	return 0;
+}
+
+int IsFull(STACK stk)
+{
+	if (stk.n == 1000)
+		return 1;
+	return 0;
+}
+
+void Push(STACK& stk, SEGMENT x)
+{
+	stk.arr[stk.n] = x;
+	stk.n++;
+}
+
+SEGMENT Pop(STACK& stk)
+{
+	SEGMENT x = stk.arr[stk.n - 1];
+	stk.n--;
+	return x;
+}
+
 int Partition(int arr[], int Left, int Right)
 {
 	int pivot = arr[Right];
-	int pos = (Left - 1);
-	for(int i = Left; i<= Right-1;i++)
+	int pos = Left - 1;
+	for (int i = Left; i <= Right - 1; i++)
 		if (arr[i] < pivot)
 		{
 			pos++;
@@ -72,19 +123,23 @@ int Partition(int arr[], int Left, int Right)
 	return pos;
 }
 
-void QuickSort(int arr[], int Left, int Right)
-{
-	if (Left < Right)
-	{
-		int iPivot = Partition(arr, Left, Right);
-		QuickSort(arr, Left, iPivot - 1);
-		QuickSort(arr, iPivot + 1, Right);
-	}
-}
-
 void QuickSort(int arr[], int n)
 {
-	QuickSort(arr, 0, n - 1);
+	if (n <= 1)
+		return;
+	STACK stk;
+	Init(stk);
+	SEGMENT dd = { 0, n - 1 };
+	Push(stk, dd);
+	while (IsEmpty(stk) == 0)
+	{
+		dd = Pop(stk);
+		int pos = Partition(arr, dd.Left, dd.Right);
+		if (dd.Left < pos - 1)
+			Push(stk, { dd.Left, pos - 1 });
+		if (pos + 1 < dd.Right)
+			Push(stk, { pos + 1, dd.Right });
+	}
 }
 
 bool Output(int arr[], int n, string filename)
